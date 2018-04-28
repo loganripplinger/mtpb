@@ -22,5 +22,9 @@
   "bugs": {
     "url": "https://github.com/loganripplinger/mtpb/issues"
   },
-  "homepage": "https://github.com/loganripplinger/mtpb#readme"
+  "homepage": "https://github.com/loganripplinger/mtpb#readme",
+  "dependencies": {
+    "axios": "^0.16.2",
+    "ws": "^5.1.1"
+  }
 }
