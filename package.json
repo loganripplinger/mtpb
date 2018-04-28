@@ -1,0 +1,26 @@
+{
+  "name": "mtpb",
+  "version": "1.0.0",
+  "description": "Murder Trivia Party Bot! Invite me and I'll play the game with you.",
+  "main": "index.js",
+  "scripts": {
+    "test": "test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/loganripplinger/mtpb.git"
+  },
+  "keywords": [
+    "jackbox",
+    "murder",
+    "trivia",
+    "party",
+    "bot"
+  ],
+  "author": "Logan Ripplinger",
+  "license": "GPL-3.0",
+  "bugs": {
+    "url": "https://github.com/loganripplinger/mtpb/issues"
+  },
+  "homepage": "https://github.com/loganripplinger/mtpb#readme"
+}
