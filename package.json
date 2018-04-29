@@ -1,6 +1,6 @@
 {
   "name": "mtpb",
-  "version": "1.0.0",
+  "version": "0.0.1",
   "description": "Murder Trivia Party Bot! Invite me and I'll play the game with you.",
   "main": "index.js",
   "scripts": {
