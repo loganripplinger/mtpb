@@ -114,14 +114,29 @@ function handlePlayer(ws, data) {
 	  		const message = '5:::{"name":"msg","args":[{"roomId":"' + room + '","userId":"' + userId + '","message":{"choice":' + answer + '},"type":"Action","appId":"87fd7112-e835-4794-88bc-dc6e3630d640","action":"SendMessageToRoomOwner"}]}'
 	  		console.log('Sending: ' + message)
 
-	  		var seconds = 3
+	  		var seconds = 2
 	  		var waitTill = new Date(new Date().getTime() + seconds * 1000);
 	  		while(waitTill > new Date()){}
 
 	  		ws.send(message)
 	  		return 
 	  	} else if (mode === 'MakeManyChoices')
-	  		const message = '5:::{"name":"msg","args":[{"roomId":"' + room + '","userId":"' + userId + '","message":{"choices":[' + answer + ']},"type":"Action","appId":"87fd7112-e835-4794-88bc-dc6e3630d640","action":"SendMessageToRoomOwner"}]}'
+
+			for (i = 1; i<=choices.length; i++) {
+				var true_or_false = (Math.floor(Math.random() * 2) === 1)
+				if (i === 1) {
+					multi_answer = true_or_false
+				} else {
+					multi_answer = multi_answer + ',' + true_or_false
+				}
+			}
+	  		const message = '5:::{"name":"msg","args":[{"roomId":"' + room + '","userId":"' + userId + '","message":{"choices":[' + multi_answer + ']},"type":"Action","appId":"87fd7112-e835-4794-88bc-dc6e3630d640","action":"SendMessageToRoomOwner"}]}'
+			
+			var seconds = 2
+	  		var waitTill = new Date(new Date().getTime() + seconds * 1000);
+	  		while(waitTill > new Date()){}	  		
+	  		ws.send(message)
+	  		return
 
 	  	} else if (mode === 'Lobby') {
 	  		console.log('Lobby stuff. Ignoring.')
