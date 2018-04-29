@@ -1,3 +1,5 @@
+var room = 'BQBW'
+
 var jb = require("./jackbox_connection")
 const WebSocket = require('ws');
 
@@ -6,7 +8,6 @@ const WebSocket = require('ws');
 var userId = '656fb518-d0ae-494f-bfd6-4e9a8fbde2fd'
 
 var user_name = 'ROBOT'
-var room = 'HTPB'
 var joinType = 'player' 
 // var joinType = 'audience' 
 
@@ -114,13 +115,13 @@ function handlePlayer(ws, data) {
 	  		const message = '5:::{"name":"msg","args":[{"roomId":"' + room + '","userId":"' + userId + '","message":{"choice":' + answer + '},"type":"Action","appId":"87fd7112-e835-4794-88bc-dc6e3630d640","action":"SendMessageToRoomOwner"}]}'
 	  		console.log('Sending: ' + message)
 
-	  		var seconds = 2
-	  		var waitTill = new Date(new Date().getTime() + seconds * 1000);
-	  		while(waitTill > new Date()){}
+	  		// var seconds = 2
+	  		// var waitTill = new Date(new Date().getTime() + seconds * 1000);
+	  		// while(waitTill > new Date()){}
 
 	  		ws.send(message)
 	  		return 
-	  	} else if (mode === 'MakeManyChoices')
+	  	} else if (mode === 'MakeManyChoices') {
 
 			for (i = 1; i<=choices.length; i++) {
 				var true_or_false = (Math.floor(Math.random() * 2) === 1)
@@ -132,9 +133,9 @@ function handlePlayer(ws, data) {
 			}
 	  		const message = '5:::{"name":"msg","args":[{"roomId":"' + room + '","userId":"' + userId + '","message":{"choices":[' + multi_answer + ']},"type":"Action","appId":"87fd7112-e835-4794-88bc-dc6e3630d640","action":"SendMessageToRoomOwner"}]}'
 			
-			var seconds = 2
-	  		var waitTill = new Date(new Date().getTime() + seconds * 1000);
-	  		while(waitTill > new Date()){}	  		
+			// var seconds = 2
+	  // 		var waitTill = new Date(new Date().getTime() + seconds * 1000);
+	  // 		while(waitTill > new Date()){}	  		
 	  		ws.send(message)
 	  		return
 
