@@ -4,7 +4,10 @@ const WebSocket = require('ws');
 
 
 var userId = '656fb518-d0ae-494f-bfd6-4e9a8fbde2fd'
-var room = 'IGHB'
+
+var user_name = 'ROBOT'
+var room = 'PYKN'
+var joinType = 'player' //'audience'
 
 jb.getWsUrl(userId, room).then(res => {
 
@@ -25,16 +28,22 @@ jb.getWsUrl(userId, room).then(res => {
 		perMessageDeflate: false
 	});
 
-	var openmessage = '5:::{"name":"msg","args":[{"roomId":"' + room + '","name":"LOL","appId":"87fd7112-e835-4794-88bc-dc6e3630d640","joinType":"audience","options":{"roomcode":"' + room + '","name":"LOL","email":"","phone":""},"type":"Action","userId":"656fb518-d0ae-494f-bfd6-4e9a8fbde2fd","action":"JoinRoom"}]}'
-
+	var openmessage = '5:::{"name":"msg","args":[{"roomId":"' + room + '","name":"' + user_name + '","appId":"87fd7112-e835-4794-88bc-dc6e3630d640","joinType":"' + joinType + '","options":{"roomcode":"' + room + '","name":"' + user_name + '","email":"","phone":""},"type":"Action","userId":"656fb518-d0ae-494f-bfd6-4e9a8fbde2fd","action":"JoinRoom"}]}'
+	console.log(openmessage)
 	ws.onopen = function (event) {
 	    console.log('Connection Open');
-		// ws.send('1::');
 		ws.send(openmessage)
-		ws.send('5:::{"name":"msg","args":[{"roomId":"ARMA","name":"LOL","appId":"87fd7112-e835-4794-88bc-dc6e3630d640","joinType":"audience","options":{"roomcode":"ARMA","name":"LOL","email":"","phone":""},"type":"Action","userId":"656fb518-d0ae-494f-bfd6-4e9a8fbde2fd","action":"JoinRoom"}]}')
 	};
 
 	ws.onmessage = function (event) {
+		var fs = require('fs')
+		fs.appendFile(room + '_log.txt', event.data, function (err) {
+		  if (err) {
+		    // append failed
+		  } else {
+		    // done
+		  }
+		})
 	    console.log('Recieved: '+event.data);
 	    if (event.data.substring(0,1) === '2') {
 	    	console.log('pong!')
@@ -43,31 +52,32 @@ jb.getWsUrl(userId, room).then(res => {
 
 	    if (event.data.substring(0,1) === '5') {
 			console.log('')	    	
-
 	    	// easiest method to check for trivia questions
 	    	try {
-		    	// TRIVIA QUESTIONS
+
 		    	const json = JSON.parse(event.data.split(':::')[1])
 		    	console.log(json)
-
-		    	// check if game over
-		    	if (json.args[0]['blob'].gameResults !== null) {
-		    		console.log('Game over, exiting')
-		    		process.exit()
+		    	
+				if ('success' in json.args[0]) {
+		    		console.log('Recieved success: ' + json.args[0].success)
 		    	}
 
-		    	const trivia_data = json.args[0]['blob']['audience']
+		    	// TRIVIA QUESTIONS
+		    	switch(json.args[0].event) {
+		    		case 'RoomDestroyed': //Game over
+		    			console.log('Room destroyed. Exiting')
+		    			process.exit()
 
-		    	const question = trivia_data.text
+		    		case 'CustomerBlobChanged': // maybe answer a question as player
+		    			handlePlayer(ws, json.args[0])
+		    			break;
 
-		    	const answer_list = trivia_data['choices']
-		    	let answer = []
-		    	for (let key of answer_list.keys()) {
-		    		answer.push(answer_list[key]['text']) // REMOVE HTML
+		    		case 'RoomBlobChanged': 
+		    			// maybe answer a question as audience
+		    			// or in lobby
+		    			handleAudience(ws, json.args[0])
+		    			break;
 		    	}
-
-		    	console.log("Question: " + question)
-		    	console.log("Answers: " + answer)
 		    } catch(e) {
 		    	console.log('error on trying to extract trivia_data')
 		    	console.log(e)
@@ -77,53 +87,59 @@ jb.getWsUrl(userId, room).then(res => {
 
 })
 
- 
-// ws.on('message', function incoming(data) {
-//   console.log(data);
-// });
+function handlePlayer(ws, json) {
+	process.exit()
+}
 
-// ws.on('open', function open() {
-//   ws.send('2::');
-// });
+function handleAudience(ws, json) {
 
+		    	const trivia_data = json['blob']['audience']
 
+		    	const question = trivia_data.text
+		    	const question_type = trivia_data.type
 
+		    	const answer_list = trivia_data['choices']
 
+		    	// for (i=1;i<=answer_list.length;i++) {
+		    	// 	console.log('real keys: ' + answer_list[i].key)
+		    	// }
 
+		    	let answer = []
+		    	for (let key of answer_list.keys()) {
+		    		console.log('answer key: ' + key)
+		    		console.log('answer text: ' + answer_list[key]['text'])
+		    		answer.push(answer_list[key]['text']) // can have <i> if title. TODO select key correctly
+		    	}
 
+		    	console.log("Question: " + question)
+		    	console.log("Answers: " + answer)
 
+		    	if (question_type === 'single') {
+			    	// send a random answer
+			    	var chosen_answer = answer[Math.floor(Math.random() * answer.length)];
+					const answer_message = '5:::{"name":"msg","args":[{"userId":"' + userId + '","roomId":"' + room + '","module":"vote","name":"Trivia Death Vote","message":{"type":"vote","vote":"' + chosen_answer + '"},"type":"Action","appId":"87fd7112-e835-4794-88bc-dc6e3630d640","action":"SendSessionMessage"}]}'
+					console.log('sending : ' + answer_message)
+					ws.send(answer_message)
+				} else if (question_type === 'multiple') {
+					// format, "vote":"true,true,false"
+					// bundle up those answers
+					var multi_answer = ''
+					for (i = 1; i<=answer.length; i++) {
+						var true_or_false = (Math.floor(Math.random() * 2) === 1)
+						if (i === 1) {
+							multi_answer = true_or_false
+						} else {
+							multi_answer = multi_answer + ',' + true_or_false
+						}
+					}
 
+					console.log(multi_answer)
 
+					// send those answers
+					const answer_message = '5:::{"name":"msg","args":[{"userId":"' + userId + '","roomId":"' + room + '","module":"vote","name":"Trivia Death Vote","message":{"type":"vote","vote":"' + multi_answer + '"},"type":"Action","appId":"87fd7112-e835-4794-88bc-dc6e3630d640","action":"SendSessionMessage"}]}'
+					console.log('sending : ' + answer_message)
+					ws.send(answer_message)
 
+				}
 
-
- 
-// const wss = new WebSocket.Server({ port: 8080 });
- 
-// wss.on('connection', function connection(ws, req) {
-//   const ip = req.connection.remoteAddress;
-// });
-
-
-// const WebSocket = require('ws');
- 
-// const ws = new WebSocket('wss://echo.websocket.org/', {
-//   origin: 'https://websocket.org'
-// });
- 
-// ws.on('open', function open() {
-//   console.log('connected');
-//   ws.send(Date.now());
-// });
- 
-// ws.on('close', function close() {
-//   console.log('disconnected');
-// });
- 
-// ws.on('message', function incoming(data) {
-//   console.log(`Roundtrip time: ${Date.now() - data} ms`);
- 
-//   setTimeout(function timeout() {
-//     ws.send(Date.now());
-//   }, 500);
-// });
+}

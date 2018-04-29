@@ -47,7 +47,7 @@ async function getWsUrl(userId, room) {
 		const data = await firstConnection(userId, room);
 
 		//fail if we are joining as a player or the audience is disabled
-		if (data['mode'] === "full" || data['mode'] === "player") { 
+		if (data['mode'] === "full") { 
 			return {'success': 'fail','mode': data['mode'], 'ws_url': '','serverid': ''}
 	  	}
 
