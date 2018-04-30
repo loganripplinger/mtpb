@@ -26,13 +26,14 @@ async function firstConnection(userId, room) {
 
 async function secondConnection(serverid) {
 	try {
+		var port = ':38203'
 		var epochtime = (new Date).getTime(); //unix epoch time
-		var url = 'https://' + serverid + ':38203/socket.io/1/?t=' + epochtime
+		var url = 'https://' + serverid + port + '/socket.io/1/?t=' + epochtime
 		console.log(url)
 		const res = await axios.get(url);
 		
 		var websocketid = res.data.split(':')[0]
-		var ws_url = 'wss://' + serverid + ':38203/socket.io/1/websocket/' + websocketid
+		var ws_url = 'wss://' + serverid + port + '/socket.io/1/websocket/' + websocketid
 
 		return ws_url
 	} catch (e) {

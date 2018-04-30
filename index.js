@@ -2,10 +2,10 @@ var room = 'BQBW'
 
 var jb = require("./jackbox_connection")
 const WebSocket = require('ws');
+var port = ":38203" //3
 
 
-
-var userId = '656fb518-d0ae-494f-bfd6-4e9a8fbde2fd'
+var userId = '656fb518-d0ae-494f-bfd6-4e9a8fbde2fa' //d
 
 var user_name = 'ROBOT'
 var joinType = 'player' 
@@ -20,7 +20,7 @@ jb.getWsUrl(userId, room).then(res => {
 	}
 	
 	let ws_url = res['ws_url'] // program parameter
-	let host_url = res['serverid'] + ":38203"
+	let host_url = res['serverid'] + port
 
 	console.log(host_url)
 
