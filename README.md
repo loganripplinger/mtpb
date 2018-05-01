@@ -7,5 +7,5 @@ Use `npm install` to install required things.
 
 Replace `4-digit-roomcode` with the room you want to join.
 ```
-node index.js 4-digit-roomcode
+node bot_join.js 4-digit-roomcode
 ```
