@@ -1,11 +1,11 @@
-var room = 'BQBW'
+var room = 'GYWS'
 
 var jb = require("./jackbox_connection")
 const WebSocket = require('ws');
 var port = ":38203" //3
 
 
-var userId = '656fb518-d0ae-494f-bfd6-4e9a8fbde2fa' //d
+var userId = randUserId() //656fb518-d0ae-494f-bfd6-4e9a8fbde2fd
 
 var user_name = 'ROBOT'
 var joinType = 'player' 
@@ -30,7 +30,7 @@ jb.getWsUrl(userId, room).then(res => {
 		perMessageDeflate: false
 	});
 
-	var openmessage = '5:::{"name":"msg","args":[{"roomId":"' + room + '","name":"' + user_name + '","appId":"87fd7112-e835-4794-88bc-dc6e3630d640","joinType":"' + joinType + '","options":{"roomcode":"' + room + '","name":"' + user_name + '","email":"","phone":""},"type":"Action","userId":"656fb518-d0ae-494f-bfd6-4e9a8fbde2fd","action":"JoinRoom"}]}'
+	var openmessage = '5:::{"name":"msg","args":[{"roomId":"' + room + '","name":"' + user_name + '","appId":"87fd7112-e835-4794-88bc-dc6e3630d640","joinType":"' + joinType + '","options":{"roomcode":"' + room + '","name":"' + user_name + '","email":"","phone":""},"type":"Action","userId":"' + userId + '","action":"JoinRoom"}]}'
 	console.log(openmessage)
 	ws.onopen = function (event) {
 	    console.log('Connection Open');
@@ -51,7 +51,7 @@ jb.getWsUrl(userId, room).then(res => {
 	    	ws.send('2::')
 	    	return
 	    }
-
+		//0:: means you were disconnected, can occur when you join in new websocket with same userid
 	    console.log('\x1b[37m'+event.data+'\x1b[0m');
 	    if (event.data.substring(0,1) === '5') {
 			console.log('')	    	
@@ -114,6 +114,11 @@ function handlePlayer(ws, data) {
 	  		//submit it
 	  		const message = '5:::{"name":"msg","args":[{"roomId":"' + room + '","userId":"' + userId + '","message":{"choice":' + answer + '},"type":"Action","appId":"87fd7112-e835-4794-88bc-dc6e3630d640","action":"SendMessageToRoomOwner"}]}'
 	  		console.log('Sending: ' + message)
+	  		
+	  		// real
+	  		// 5:::{"name":"msg","args":[{"roomId":"DQCM","userId":"656fb518-d0ae-494f-bfd6-4e9a8fbde2fd","message":{"choice":3},"type":"Action","appId":"87fd7112-e835-4794-88bc-dc6e3630d640","action":"SendMessageToRoomOwner"}]}
+	  		// mine
+	  		// 5:::{"name":"msg","args":[{"roomId":"VRFE","userId":"656fb518-d0ae-494f-bfd6-4e9a8fbde2fa","message":{"choice":0},"type":"Action","appId":"87fd7112-e835-4794-88bc-dc6e3630d640","action":"SendMessageToRoomOwner"}]}
 
 	  		// var seconds = 2
 	  		// var waitTill = new Date(new Date().getTime() + seconds * 1000);
@@ -220,4 +225,13 @@ function handleAudience(ws, json) {
 		console.log('sending : ' + answer_message)
 		ws.send(answer_message)
 	}
+}
+
+function randUserId() {
+	// produces: //656fb518-d0ae-494f-bfd6-4e9a8fbde2fa
+	return 
+		Math.random().toString(16).substring(2, 10) + '-' + 
+		Math.random().toString(16).substring(2, 6) + '-' +
+		Math.random().toString(16).substring(2, 6) + '-' +
+		Math.random().toString(16).substring(2, 14);
 }

@@ -20,7 +20,11 @@ async function firstConnection(userId, room) {
 	    	'serverid': res.data.server
 		}
 	} catch (e) {
-		console.log(e)
+		// if (e.response.status === 404) {
+		// 	console.log('404 failure.')
+		// 	return something
+		// }
+		// console.log(e)
 	}
 }
 
@@ -37,7 +41,7 @@ async function secondConnection(serverid) {
 
 		return ws_url
 	} catch (e) {
-		console.log(e)
+		// console.log(e)
 	}
 }
 
@@ -63,7 +67,8 @@ async function getWsUrl(userId, room) {
 		}
 	} catch(e) {
 		//todo if 404 return room not found
-		console.log(e)
+
+		// console.log(e)
 		return {'success': 'fail','mode':'','ws_url': '','serverid': ''}
 	}
 }
