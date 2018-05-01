@@ -1,4 +1,10 @@
-var room = 'BMXB'
+// takes a 4 digit room 
+
+const room = process.argv[2].toUpperCase()
+if (room.length !== 4 || !(/[a-zA-Z]{4}/.test(room))) {
+	console.log(`Provide a valid room code. You provided: ${room}`)
+	process.exit()
+}
 
 var jb = require("./jackbox_connection")
 const WebSocket = require('ws');
