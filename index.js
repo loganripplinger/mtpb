@@ -1,4 +1,4 @@
-var room = 'GYWS'
+var room = 'BMXB'
 
 var jb = require("./jackbox_connection")
 const WebSocket = require('ws');
@@ -10,7 +10,7 @@ var userId = randUserId() //656fb518-d0ae-494f-bfd6-4e9a8fbde2fd
 var user_name = 'ROBOT'
 var joinType = 'player' 
 // var joinType = 'audience' 
-
+console.log('userId: ' + userId)
 jb.getWsUrl(userId, room).then(res => {
 
 	console.log(res)
@@ -229,8 +229,7 @@ function handleAudience(ws, json) {
 
 function randUserId() {
 	// produces: //656fb518-d0ae-494f-bfd6-4e9a8fbde2fa
-	return 
-		Math.random().toString(16).substring(2, 10) + '-' + 
+	return Math.random().toString(16).substring(2, 10) + '-' + 
 		Math.random().toString(16).substring(2, 6) + '-' +
 		Math.random().toString(16).substring(2, 6) + '-' +
 		Math.random().toString(16).substring(2, 14);
