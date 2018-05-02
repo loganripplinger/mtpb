@@ -1,32 +1,32 @@
+const WebSocket = require('ws');
+var jb = require("./jackbox_connection")
 
+const ROOM = process.argv[2].toUpperCase()
 
-const room = process.argv[2].toUpperCase()
-if (room.length !== 4 || !(/[a-zA-Z]{4}/.test(room))) {
-	console.log(`Provide a valid room code. You provided: ${room}`)
+const isNotValidRoom = ROOM.length !== 4 || !(/[a-zA-Z]{4}/.test(ROOM))
+
+if (isNotValidRoom) {
+	console.log(`Provide a valid room code. You provided: ${ROOM}`)
 	process.exit()
 }
 
-var jb = require("./jackbox_connection")
-const WebSocket = require('ws');
-var port = ":38203" //3
+const PORT = ":38203"
+const USER_ID = randUserId()
+const USER_NAME = 'ROBOT'
+const JOIN_TYPE = 'player' 
+// const JOIN_TYPE = 'audience' 
 
+// console.log('USER_ID: ' + USER_ID)
+jb.getWsUrl(USER_ID, ROOM).then(res => {
 
-var userId = randUserId() //656fb518-d0ae-494f-bfd6-4e9a8fbde2fd
-var user_name = 'ROBOT'
-var joinType = 'player' 
-// var joinType = 'audience' 
-
-console.log('userId: ' + userId)
-jb.getWsUrl(userId, room).then(res => {
-
-	console.log(res)
+	// console.log(res)
 	if (res['success'] === 'fail') { 
-		console.log('Encountered a failure when attempting to join the room ' + room + '. Exiting.')
+		console.log('Encountered a failure when attempting to join the room ' + ROOM + '. Exiting.')
 		process.exit() 
 	}
 	
 	let ws_url = res['ws_url'] // program parameter
-	let host_url = res['serverid'] + port
+	let host_url = res['serverid'] + PORT
 
 	console.log(host_url)
 
@@ -36,7 +36,7 @@ jb.getWsUrl(userId, room).then(res => {
 		perMessageDeflate: false
 	});
 
-	var openmessage = '5:::{"name":"msg","args":[{"roomId":"' + room + '","name":"' + user_name + '","appId":"87fd7112-e835-4794-88bc-dc6e3630d640","joinType":"' + joinType + '","options":{"roomcode":"' + room + '","name":"' + user_name + '","email":"","phone":""},"type":"Action","userId":"' + userId + '","action":"JoinRoom"}]}'
+	var openmessage = '5:::{"name":"msg","args":[{"roomId":"' + ROOM + '","name":"' + USER_NAME + '","appId":"87fd7112-e835-4794-88bc-dc6e3630d640","joinType":"' + JOIN_TYPE + '","options":{"roomcode":"' + ROOM + '","name":"' + USER_NAME + '","email":"","phone":""},"type":"Action","userId":"' + USER_ID + '","action":"JoinRoom"}]}'
 	console.log(openmessage)
 	ws.onopen = function (event) {
 	    console.log('Connection Open');
@@ -45,7 +45,7 @@ jb.getWsUrl(userId, room).then(res => {
 
 	ws.onmessage = function (event) {
 		var fs = require('fs')
-		fs.appendFile(room + '_log.txt', event.data, function (err) {
+		fs.appendFile(ROOM + '_log.txt', event.data, function (err) {
 		  if (err) {
 		    // append failed
 		  } else {
@@ -57,7 +57,7 @@ jb.getWsUrl(userId, room).then(res => {
 	    	ws.send('2::')
 	    	return
 	    }
-		//0:: means you were disconnected, can occur when you join in new websocket with same userid
+		//0:: means you were disconnected, can occur when you join in new websocket with same USER_ID
 	    console.log('\x1b[37m'+event.data+'\x1b[0m');
 	    if (event.data.substring(0,1) === '5') {
 			console.log('')	    	
@@ -118,7 +118,7 @@ function handlePlayer(ws, data) {
 	  		//pick a random one
 	  		var answer = Math.floor(Math.random() * choices.length)
 	  		//submit it
-	  		const message = '5:::{"name":"msg","args":[{"roomId":"' + room + '","userId":"' + userId + '","message":{"choice":' + answer + '},"type":"Action","appId":"87fd7112-e835-4794-88bc-dc6e3630d640","action":"SendMessageToRoomOwner"}]}'
+	  		const message = '5:::{"name":"msg","args":[{"roomId":"' + ROOM + '","userId":"' + USER_ID + '","message":{"choice":' + answer + '},"type":"Action","appId":"87fd7112-e835-4794-88bc-dc6e3630d640","action":"SendMessageToRoomOwner"}]}'
 	  		console.log('Sending: ' + message)
 	  		
 	  		// real
@@ -142,7 +142,7 @@ function handlePlayer(ws, data) {
 					multi_answer = multi_answer + ',' + true_or_false
 				}
 			}
-	  		const message = '5:::{"name":"msg","args":[{"roomId":"' + room + '","userId":"' + userId + '","message":{"choices":[' + multi_answer + ']},"type":"Action","appId":"87fd7112-e835-4794-88bc-dc6e3630d640","action":"SendMessageToRoomOwner"}]}'
+	  		const message = '5:::{"name":"msg","args":[{"roomId":"' + ROOM + '","userId":"' + USER_ID + '","message":{"choices":[' + multi_answer + ']},"type":"Action","appId":"87fd7112-e835-4794-88bc-dc6e3630d640","action":"SendMessageToRoomOwner"}]}'
 			
 			// var seconds = 2
 	  // 		var waitTill = new Date(new Date().getTime() + seconds * 1000);
@@ -208,7 +208,7 @@ function handleAudience(ws, json) {
 	if (question_type === 'single') {
     	// send a random answer
     	var chosen_answer = answer[Math.floor(Math.random() * answer.length)];
-		const answer_message = '5:::{"name":"msg","args":[{"userId":"' + userId + '","roomId":"' + room + '","module":"vote","name":"Trivia Death Vote","message":{"type":"vote","vote":"' + chosen_answer + '"},"type":"Action","appId":"87fd7112-e835-4794-88bc-dc6e3630d640","action":"SendSessionMessage"}]}'
+		const answer_message = '5:::{"name":"msg","args":[{"userId":"' + USER_ID + '","roomId":"' + ROOM + '","module":"vote","name":"Trivia Death Vote","message":{"type":"vote","vote":"' + chosen_answer + '"},"type":"Action","appId":"87fd7112-e835-4794-88bc-dc6e3630d640","action":"SendSessionMessage"}]}'
 		console.log('sending : ' + answer_message)
 		ws.send(answer_message)
 	} else if (question_type === 'multiple') {
@@ -227,7 +227,7 @@ function handleAudience(ws, json) {
 		console.log(multi_answer)
 
 		// send those answers
-		const answer_message = '5:::{"name":"msg","args":[{"userId":"' + userId + '","roomId":"' + room + '","module":"vote","name":"Trivia Death Vote","message":{"type":"vote","vote":"' + multi_answer + '"},"type":"Action","appId":"87fd7112-e835-4794-88bc-dc6e3630d640","action":"SendSessionMessage"}]}'
+		const answer_message = '5:::{"name":"msg","args":[{"userId":"' + USER_ID + '","roomId":"' + ROOM + '","module":"vote","name":"Trivia Death Vote","message":{"type":"vote","vote":"' + multi_answer + '"},"type":"Action","appId":"87fd7112-e835-4794-88bc-dc6e3630d640","action":"SendSessionMessage"}]}'
 		console.log('sending : ' + answer_message)
 		ws.send(answer_message)
 	}
