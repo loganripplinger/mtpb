@@ -18,6 +18,8 @@ const JOIN_TYPE = 'player'
 
 // console.log('USER_ID: ' + USER_ID)
 jb.getWsUrl(USER_ID, ROOM).then(res => {
+	// This makes a connection to the play room
+	// First make a websocket connection, and then parse that data
 
 	// console.log(res)
 	if (res['success'] === 'fail') { 
@@ -25,33 +27,27 @@ jb.getWsUrl(USER_ID, ROOM).then(res => {
 		process.exit() 
 	}
 	
-	let ws_url = res['ws_url'] // program parameter
-	let host_url = res['serverid'] + PORT
+	var wsUrl = res['wsUrl']
+	var host_url = res['serverid'] + PORT
 
-	console.log(host_url)
+	// console.log(host_url)
 
-	const ws = new WebSocket(ws_url, {
+	const ws = new WebSocket(wsUrl, {
 		origin: "https://jackbox.tv",
 		host: host_url,
 		perMessageDeflate: false
 	});
 
 	var openmessage = '5:::{"name":"msg","args":[{"roomId":"' + ROOM + '","name":"' + USER_NAME + '","appId":"87fd7112-e835-4794-88bc-dc6e3630d640","joinType":"' + JOIN_TYPE + '","options":{"roomcode":"' + ROOM + '","name":"' + USER_NAME + '","email":"","phone":""},"type":"Action","userId":"' + USER_ID + '","action":"JoinRoom"}]}'
-	console.log(openmessage)
+	// console.log(openmessage)
 	ws.onopen = function (event) {
 	    console.log('Connection Open');
 		ws.send(openmessage)
 	};
 
 	ws.onmessage = function (event) {
-		var fs = require('fs')
-		fs.appendFile(ROOM + '_log.txt', event.data, function (err) {
-		  if (err) {
-		    // append failed
-		  } else {
-		    // done
-		  }
-		})
+		logChatRoomData(event)
+
 	    if (event.data.substring(0,1) === '2') {
 	    	console.log('Ping? Pong!')
 	    	ws.send('2::')
@@ -239,4 +235,15 @@ function randUserId() {
 		Math.random().toString(16).substring(2, 6) + '-' +
 		Math.random().toString(16).substring(2, 6) + '-' +
 		Math.random().toString(16).substring(2, 14);
+}
+
+function logChatRoomData(event) {
+	var fs = require('fs')
+	fs.appendFile(ROOM + '_log.txt', event.data, function (err) {
+	  if (err) {
+	    // append failed
+	  } else {
+	    // done
+	  }
+	})
 }
