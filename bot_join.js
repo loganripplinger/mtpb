@@ -1,14 +1,14 @@
 const WebSocket = require('ws');
-var jb = require("./jackbox_connection")
+const jb = require("./jackbox_connection")
 
 const ROOM = process.argv[2].toUpperCase()
 
 const isNotValidRoom = ROOM.length !== 4 || !(/[a-zA-Z]{4}/.test(ROOM))
-
 if (isNotValidRoom) {
 	console.log(`Provide a valid room code. You provided: ${ROOM}`)
 	process.exit()
 }
+
 
 const PORT = ":38203"
 const USER_ID = randUserId()
