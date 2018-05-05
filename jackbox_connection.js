@@ -1,6 +1,11 @@
 const axios = require('axios');
 
 async function firstConnection(USER_ID, ROOM) {
+	// This returns the serverid for use in the ws url
+	// serverid.jackbox.com
+	// This can also alert us that the room;
+	//   does not exist
+	//   is full / does not allow audience to join
 	try {
 		var URL = 'https://blobcast.jackboxgames.com/room/' + ROOM + '?userId=' + USER_ID;
 
@@ -26,6 +31,8 @@ async function firstConnection(USER_ID, ROOM) {
 }
 
 async function secondConnection(serverId) {
+	// This gives us the websocketid that we need to connect to in
+	// wss://serverid.jackbox.com:port/socket.io/1/websocket/websocketid
 	try {
 		var PORT = ':38203';
 		var epochTime = (new Date).getTime(); //unix epoch time
@@ -44,14 +51,16 @@ async function secondConnection(serverId) {
 
 
 async function getWsUrl(USER_ID, ROOM) {
+	// Given a valid room id, this will give us the required url \
+	// that we need to connect on websocket to in order to play the 
+	// game.
 	try {
-		
 		const data = await firstConnection(USER_ID, ROOM);
 
 		//fail if we are joining as a player or the audience is disabled
 		if (data['mode'] === "full") { 
 			return {
-				success: 'fail',
+				success: false,
 				mode: data['mode'], 
 				wsUrl: '',
 				serverId: ''}
@@ -61,7 +70,7 @@ async function getWsUrl(USER_ID, ROOM) {
 		const wsUrl = await secondConnection(data['serverId']);
 
 		return {
-			success: 'success',
+			success: true,
 			mode: data['mode'],
 			wsUrl: wsUrl,
 			serverId: data['serverId']
@@ -71,7 +80,7 @@ async function getWsUrl(USER_ID, ROOM) {
 
 		// console.log(e)
 		return {
-			success: 'fail',
+			success: false,
 			mode:'',
 			wsUrl: '',
 			serverId: ''

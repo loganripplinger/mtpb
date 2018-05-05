@@ -1,7 +1,7 @@
 const WebSocket = require('ws');
 const jb = require("./jackbox_connection")
 
-const ROOM = process.argv[2].toUpperCase()
+const ROOM = process.argv[2]
 
 const isNotValidRoom = ROOM.length !== 4 || !(/[a-zA-Z]{4}/.test(ROOM))
 if (isNotValidRoom) {
@@ -9,26 +9,27 @@ if (isNotValidRoom) {
 	process.exit()
 }
 
-
 const PORT = ":38203"
 const USER_ID = randUserId()
 const USER_NAME = 'ROBOT'
 const JOIN_TYPE = 'player' 
 // const JOIN_TYPE = 'audience' 
-
 // console.log('USER_ID: ' + USER_ID)
+
 jb.getWsUrl(USER_ID, ROOM).then(res => {
 	// This makes a connection to the play room
 	// First make a websocket connection, and then parse that data
 
 	// console.log(res)
-	if (res['success'] === 'fail') { 
-		console.log('Encountered a failure when attempting to join the room ' + ROOM + '. Exiting.')
-		process.exit() 
+	if (res.success === false) { 
+		console.log(
+			'Encountered a failure when attempting to join the room '
+			 + ROOM + '. Exiting.')
+		process.exit()
 	}
 	
-	var wsUrl = res['wsUrl']
-	var host_url = res['serverid'] + PORT
+	var wsUrl = res.wsUrl
+	var host_url = res.serverid + PORT
 
 	// console.log(host_url)
 
@@ -38,55 +39,71 @@ jb.getWsUrl(USER_ID, ROOM).then(res => {
 		perMessageDeflate: false
 	});
 
-	var openmessage = '5:::{"name":"msg","args":[{"roomId":"' + ROOM + '","name":"' + USER_NAME + '","appId":"87fd7112-e835-4794-88bc-dc6e3630d640","joinType":"' + JOIN_TYPE + '","options":{"roomcode":"' + ROOM + '","name":"' + USER_NAME + '","email":"","phone":""},"type":"Action","userId":"' + USER_ID + '","action":"JoinRoom"}]}'
-	// console.log(openmessage)
+	var joinRoomMessage = '5:::{"name":"msg","args":[{"roomId":"' + ROOM + '","name":"' + USER_NAME + '","appId":"87fd7112-e835-4794-88bc-dc6e3630d640","joinType":"' + JOIN_TYPE + '","options":{"roomcode":"' + ROOM + '","name":"' + USER_NAME + '","email":"","phone":""},"type":"Action","userId":"' + USER_ID + '","action":"JoinRoom"}]}'
+	// console.log(joinRoomMessage)
+
 	ws.onopen = function (event) {
 	    console.log('Connection Open');
-		ws.send(openmessage)
+		ws.send(joinRoomMessage)
 	};
 
 	ws.onmessage = function (event) {
 		logChatRoomData(event)
 
-	    if (event.data.substring(0,1) === '2') {
-	    	console.log('Ping? Pong!')
-	    	ws.send('2::')
-	    	return
-	    }
 		//0:: means you were disconnected, can occur when you join in new websocket with same USER_ID
-	    console.log('\x1b[37m'+event.data+'\x1b[0m');
-	    if (event.data.substring(0,1) === '5') {
-			console.log('')	    	
-	    	// easiest method to check for trivia questions
-	    	try {
 
-		    	const json = JSON.parse(event.data.split(':::')[1])
-		    	// console.log(json)
+	    msgPrefix = event.data.substring(0,1)
+	    switch(msgPrefix) {
+
+		    case '0':
+		    	console.log('Forcefully disconnected.')
+		    	prcoess.exit()
+		    
+		    case '2':
+		    	console.log('Ping? Pong!')
+		    	var pong = '2::'
+		    	ws.send(pong)
+		    	return;
+		    
+		    case '5':
+	    		console.log('\x1b[37m'+event.data+'\x1b[0m');
+				console.log('')
 		    	
-				if ('success' in json.args[0]) {
-		    		console.log('Recieved success: ' + json.args[0].success)
-		    	}
+		    	// easiest method to check for trivia questions
+		    	try {
+			    	const json = JSON.parse(event.data.split(':::')[1]).args[0]
+			    	// console.log(json)
+			    	
+					if ('success' in json) {
+			    		console.log('Recieved success: ' + json.success)
+			    		break;
+			    	}
 
-		    	// TRIVIA QUESTIONS
-		    	switch(json.args[0].event) {
-		    		case 'RoomDestroyed': //Game over
-		    			console.log('Room destroyed. Exiting')
-		    			process.exit()
+			    	// TRIVIA QUESTIONS
+			    	switch(json.event) {
+			    		case 'RoomDestroyed': 
+			    			// Game over
+			    			console.log('Room destroyed. Exiting')
+			    			process.exit()
 
-		    		case 'CustomerBlobChanged': // maybe answer a question as player
-		    			handlePlayer(ws, json.args[0])
-		    			break;
+			    		case 'CustomerBlobChanged': 
+			    			// maybe answer a question as player
+			    			handlePlayer(ws, json)
+			    			return;
 
-		    		case 'RoomBlobChanged': 
-		    			// maybe answer a question as audience
-		    			// or in lobby
-		    			handleAudience(ws, json.args[0])
-		    			break;
-		    	}
-		    } catch(e) {
-		    	console.log('error on trying to extract trivia_data')
-		    	console.log(e)
-		    }
+			    		case 'RoomBlobChanged': 
+			    			// maybe answer a question as audience
+			    			// or in lobby
+			    			handleAudience(ws, json)
+			    			break;
+			    	}
+			    } catch(e) {
+			    	console.log('error on trying to extract trivia_data')
+			    	console.log(e)
+			    }
+			case default:
+				console.log('\x1b[37m'+event.data+'\x1b[0m');
+			} 
 	    }
 	};
 
@@ -94,7 +111,6 @@ jb.getWsUrl(USER_ID, ROOM).then(res => {
 
 function handlePlayer(ws, data) {
 	try {
-
 		//{"name":"msg","args":[{"type":"Event","event":"CustomerBlobChanged","roomId":"BWKS","blob":{"choices":[{"disabled":false,"text":"Coca-Cola"},{"disabled":false,"text":"Nestle"},{"disabled":false,"text":"Nabisco"},{"disabled":false,"text":"Heinz"}],"chosen":null,"dollInfo":{"controllerColors":{"dark":"#5f3c28","light":"#e1af78"},"name":"Orange"},"playerIndex":1,"playerName":"Im a robot","state":"MakeSingleChoice","text":"What food company actually owns the Weight Watchers weight loss clinics?"}}]}
 		json = data.blob
 
