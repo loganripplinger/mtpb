@@ -1,6 +1,6 @@
 const WebSocket = require('ws');
 const jb = require("./jackbox_connection")
-const google = require('googleAnswer')
+const google = require('./googleparser')
 
 const ROOM = process.argv[2]
 
@@ -104,9 +104,9 @@ jb.getWsUrl(USER_ID, ROOM).then(res => {
 			    	console.log('error on trying to extract trivia_data')
 			    	console.log(e)
 			    }
-			case default:
+			default:
 				console.log('\x1b[37m'+event.data+'\x1b[0m');
-			} 
+			
 	    }
 	};
 
@@ -141,7 +141,7 @@ function handlePlayer(ws, data) {
 		
 		var chosen = json.chosen //should be null
 		var question = json.text
-
+		//todo if chosen then return
 	  	switch (mode) {
 	  		case 'MakeSingleChoice':
 	  			var answer = ''
@@ -181,7 +181,7 @@ function handlePlayer(ws, data) {
 				//"lobbyState":"CanStart",
 		  		//"lobbyState":"Countdown"
 		  		return
-		  	case deafult:
+		  	deafult:
 	  			console.log('Unhandled mode: ' + mode)
 	  			return
 	  	}
@@ -262,6 +262,7 @@ function handleAudience(ws, json) {
 function randUserId() {
 	// produces: //656fb518-d0ae-494f-bfd6-4e9a8fbde2fa
 	return Math.random().toString(16).substring(2, 10) + '-' + 
+		Math.random().toString(16).substring(2, 6) + '-' +
 		Math.random().toString(16).substring(2, 6) + '-' +
 		Math.random().toString(16).substring(2, 6) + '-' +
 		Math.random().toString(16).substring(2, 14);
