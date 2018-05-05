@@ -3,9 +3,6 @@
   "version": "0.0.1",
   "description": "Murder Trivia Party Bot! Invite me and I'll play the game with you.",
   "main": "index.js",
-  "scripts": {
-    "test": "test"
-  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/loganripplinger/mtpb.git"
@@ -26,9 +23,16 @@
   "dependencies": {
     "axios": "^0.16.2",
     "express": "^4.16.3",
-    "google": "^2.1.0",
     "request": "^2.85.0",
-    "request-promise": "^4.2.2",
+    "serp": "^2.0.2",
     "ws": "^5.1.1"
+  },
+  "devDependencies": {
+    "chai": "^4.1.2",
+    "mocha": "^5.1.1",
+    "sinon": "^5.0.3"
+  },
+  "scripts": {
+    "test": "mocha"
   }
 }

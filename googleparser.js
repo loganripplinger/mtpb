@@ -1,7 +1,7 @@
 //node googleparser.js url term1 term2 term3 term4 term5
 
 //question
-var question = 'Harvard Grads'
+//'Harvard Grads'
 
 //urls
 //https://www.cnbc.com/2016/09/14/10-of-the-most-famous-harvard-grads--and-dropouts--of-modern-time.html
@@ -15,56 +15,77 @@ var question = 'Harvard Grads'
 //Stephen Colbert
 //Natalie Portman
 //Conan O’Brien
-
-
-urls = [
-'https://www.cnbc.com/2016/09/14/10-of-the-most-famous-harvard-grads--and-dropouts--of-modern-time.html',
-'https://en.wikipedia.org/wiki/List_of_Harvard_University_people',
-'https://www.businessinsider.com/30-most-famous-harvard-students-of-all-time-2010-4',
-'https://www.businessinsider.com/10-richest-harvard-grads-2017-7',
-'https://www.vault.com/blog/admit-one-vaults-mba-law-school-and-college-blog/heres-where-harvard-grads-will-be-working-next-year'
-]
-
+const axios = require('axios');
+var serp = require("serp");
+ 
 //terms
 // terms = {'Stephen Colbert': 0,'Natalie Portman': 0,"Conan O'Brien": 0}
-terms = ['Stephen Colbert','Natalie Portman',"Conan O'Brien"]
 
-var counter = {}
 
 //connect to url get text as string
 
 
-var google = require('google')
+async function googleAnswer(question, choices) { 
+	var options = {
+	  host : "google.com",
+	  qs : {
+	    q : question
+	  },
+	  num : 3
+	};
 
-google.resultsPerPage = 5
-
-google(question, function(err,res) {
-	if (err) console.log(err)
-
-	for (var i = 0; i < res.links.length; i++) {
-		countTermsUrl(res.links[i].link)
+	answerCounter = {}
+	//seed answerCounter with choices
+	choices.forEach(function(choice) {
+		answerCounter[choice] = 0
+	})
+	
+	var results = []
+	try {
+		var webSites = await serp.search(options)
+		// console.log(webSites.length)
+		for (i = 0; i <= webSites.length; i++) {
+			results.push(webSites[i].url)
+		}
+	} catch(e) {
+		console.log(e)
 	}
 
+	console.log(results)
 
-})
+	for (var i = 0; i < results.length; i++) {
+		// console.log(webSites)
+		// console.log(`first for: ${i}`)
+		try {
+			var res = await axios.get(results[i]);
+			var searchCorpus = res.data		
 
-var request = require('request-promise');
+			for (var j = 0; j < choices.length; j++) {
+				// console.log(`second for: ${j}, ${choices[j]}`)
+				var occurenceCount = countOccurences(searchCorpus, choices[j])
+				// We don't have to check if (choice in answerCounter)
+				// because we seeded it
+				// console.log(`occurenceCount = ${occurenceCount}`)
+				answerCounter[choices[j]] += occurenceCount
+			}
 
-function countTermsUrl(url) {
-	console.log(url)
-	request(url).then(function(body) {
-		
-		// console.log(body)
-		countTerms_regex(body)		// console.log(body)
-	}) 
+		} catch(e) {
+			console.log(e)
+		}
+	}	
+	console.log(answerCounter)
+	return answerCounter
 }
 
-function countTerms_regex(text) {
-	terms.forEach(function(term) {
-		var regExp = new RegExp(term, "gi");
-  		count = (text.match(regExp) || []).length;
-  		console.log(counter[term])
-  		counter[term] =+ count
-	});
-	console.log(counter)
+function countOccurences(searchCorpus, text) {
+	// given a corpus and a text, returns the count of occurences of text within corpus
+	var regExp = new RegExp(text, "gi");
+	occurenceCount = (searchCorpus.match(regExp) || []).length;
+	return occurenceCount
 }
+
+// var question = 'Harvard Grads'
+// var choices = ['Stephen Colbert','Natalie Portman',"Conan O'Brien"]
+// googleAnswer(question, choices)
+
+module.exports.googleAnswer = googleAnswer;

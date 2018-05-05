@@ -1,5 +1,6 @@
 const WebSocket = require('ws');
 const jb = require("./jackbox_connection")
+const google = require('googleAnswer')
 
 const ROOM = process.argv[2]
 
@@ -15,6 +16,8 @@ const USER_NAME = 'ROBOT'
 const JOIN_TYPE = 'player' 
 // const JOIN_TYPE = 'audience' 
 // console.log('USER_ID: ' + USER_ID)
+
+const RANDOM_ANSWER = false
 
 jb.getWsUrl(USER_ID, ROOM).then(res => {
 	// This makes a connection to the play room
@@ -109,30 +112,18 @@ jb.getWsUrl(USER_ID, ROOM).then(res => {
 
 })
 
-function handlePlayer(ws, data) {
-	try {
-		//{"name":"msg","args":[{"type":"Event","event":"CustomerBlobChanged","roomId":"BWKS","blob":{"choices":[{"disabled":false,"text":"Coca-Cola"},{"disabled":false,"text":"Nestle"},{"disabled":false,"text":"Nabisco"},{"disabled":false,"text":"Heinz"}],"chosen":null,"dollInfo":{"controllerColors":{"dark":"#5f3c28","light":"#e1af78"},"name":"Orange"},"playerIndex":1,"playerName":"Im a robot","state":"MakeSingleChoice","text":"What food company actually owns the Weight Watchers weight loss clinics?"}}]}
-		json = data.blob
 
-		var choices = json.choices
+
+function handlePlayer(ws, data) {
+		//{"name":"msg","args":[{"type":"Event","event":"CustomerBlobChanged","roomId":"BWKS","blob":{"choices":[{"disabled":false,"text":"Coca-Cola"},{"disabled":false,"text":"Nestle"},{"disabled":false,"text":"Nabisco"},{"disabled":false,"text":"Heinz"}],"chosen":null,"dollInfo":{"controllerColors":{"dark":"#5f3c28","light":"#e1af78"},"name":"Orange"},"playerIndex":1,"playerName":"Im a robot","state":"MakeSingleChoice","text":"What food company actually owns the Weight Watchers weight loss clinics?"}}]}
+		
 		// choices
 		// [ { disabled: false, text: 'Coca-Cola' },
 		//  { disabled: false, text: 'Nestle' },
 	  	//	{ disabled: false, text: 'Nabisco' },
 	  	//	{ disabled: false, text: 'Heinz' } ]
 
-	  	//TODO dont ignore disabled
 
-		var mode = json.state // MakeSingleChoice
-
-	  	if (mode === 'MakeSingleChoice') {
-	  		//push to a list
-	  		//pick a random one
-	  		var answer = Math.floor(Math.random() * choices.length)
-	  		//submit it
-	  		const message = '5:::{"name":"msg","args":[{"roomId":"' + ROOM + '","userId":"' + USER_ID + '","message":{"choice":' + answer + '},"type":"Action","appId":"87fd7112-e835-4794-88bc-dc6e3630d640","action":"SendMessageToRoomOwner"}]}'
-	  		console.log('Sending: ' + message)
-	  		
 	  		// real
 	  		// 5:::{"name":"msg","args":[{"roomId":"DQCM","userId":"656fb518-d0ae-494f-bfd6-4e9a8fbde2fd","message":{"choice":3},"type":"Action","appId":"87fd7112-e835-4794-88bc-dc6e3630d640","action":"SendMessageToRoomOwner"}]}
 	  		// mine
@@ -141,38 +132,61 @@ function handlePlayer(ws, data) {
 	  		// var seconds = 2
 	  		// var waitTill = new Date(new Date().getTime() + seconds * 1000);
 	  		// while(waitTill > new Date()){}
+	try {
+		json = data.blob
+		var choices = json.choices
 
-	  		ws.send(message)
-	  		return 
-	  	} else if (mode === 'MakeManyChoices') {
+	  	//TODO dont ignore disabled choices
+		var mode = json.state // MakeSingleChoice
+		
+		var chosen = json.chosen //should be null
+		var question = json.text
 
-			for (i = 1; i<=choices.length; i++) {
-				var true_or_false = (Math.floor(Math.random() * 2) === 1)
-				if (i === 1) {
-					multi_answer = true_or_false
-				} else {
-					multi_answer = multi_answer + ',' + true_or_false
+	  	switch (mode) {
+	  		case 'MakeSingleChoice':
+	  			var answer = ''
+	  			// if (RANDOM_ANSWER) { 
+		  			answer = Math.floor(Math.random() * choices.length)
+	  			// } else {
+	  			// 	var choicesArray = []
+	  			// 	for (var index; index < choices.length; i++) {
+	  			// 		choicesArray.push(choices[index].text)
+	  			// 	}
+	  			// 	// robotChoices = google.googleAnswer(question, choicesArray)
+	  			// 	// cool now we have an object that has {answer key: count, answer key: count}
+
+	  			// }
+		  		robotChoices = google.googleAnswer(question, choicesArray)
+		  		console.log(robotChoices)
+		  		const message = '5:::{"name":"msg","args":[{"roomId":"' + ROOM + '","userId":"' + USER_ID + '","message":{"choice":' + answer + '},"type":"Action","appId":"87fd7112-e835-4794-88bc-dc6e3630d640","action":"SendMessageToRoomOwner"}]}'
+		  		console.log('Sending: ' + message)
+		  		ws.send(message)
+		  		return 
+
+		  	case 'MakeManyChoices':
+				for (i = 1; i<=choices.length; i++) {
+					var true_or_false = (Math.floor(Math.random() * 2) === 1)
+					if (i === 1) {
+						multi_answer = true_or_false
+					} else {
+						multi_answer = multi_answer + ',' + true_or_false
+					}
 				}
-			}
-	  		const message = '5:::{"name":"msg","args":[{"roomId":"' + ROOM + '","userId":"' + USER_ID + '","message":{"choices":[' + multi_answer + ']},"type":"Action","appId":"87fd7112-e835-4794-88bc-dc6e3630d640","action":"SendMessageToRoomOwner"}]}'
-			
-			// var seconds = 2
-	  // 		var waitTill = new Date(new Date().getTime() + seconds * 1000);
-	  // 		while(waitTill > new Date()){}	  		
-	  		ws.send(message)
-	  		return
+	  			const message = '5:::{"name":"msg","args":[{"roomId":"' + ROOM + '","userId":"' + USER_ID + '","message":{"choices":[' + multi_answer + ']},"type":"Action","appId":"87fd7112-e835-4794-88bc-dc6e3630d640","action":"SendMessageToRoomOwner"}]}'				
+		  		ws.send(message)
+		  		return
 
-	  	} else if (mode === 'Lobby') {
-	  		console.log('Lobby stuff. Ignoring.')
-			//"lobbyState":"CanStart",
-	  		//"lobbyState":"Countdown"
-	  		return
-
-	  	} else {
-	  		console.log('FOUND A DIFFERENT CHOICE: ' + mode)
+			case 'Lobby':
+	  			console.log('Lobby stuff. Ignoring.')
+				//"lobbyState":"CanStart",
+		  		//"lobbyState":"Countdown"
+		  		return
+		  	case deafult:
+	  			console.log('Unhandled mode: ' + mode)
+	  			return
 	  	}
 	} catch(e) {
-		console.log(e)
+			console.log(e)
 	}
 }
 
