@@ -11,11 +11,11 @@ async function firstConnection(USER_ID, ROOM) {
 
 		const res = await axios.get(URL);
 		console.log('waitied for first, got: ' + res.data.server);
-	  	//console.log(res.data)
-	  	//console.log(res.data.success);
-		//console.log(res.data.roomid);
-		//console.log(res.data.server);
-		//console.log(res.data.apptag);
+	 //  	console.log(res.data)
+	 //  	console.log(res.data.success);
+		// console.log(res.data.roomid);
+		// console.log(res.data.server);
+		// console.log(res.data.apptag);
 		// console.log(res.data.joinAs);
 
 		var serverId = res.data.server;
@@ -26,7 +26,7 @@ async function firstConnection(USER_ID, ROOM) {
 		};
 	} catch (e) {
 		// TODO: if 404, ...
-		// console.log(e)
+		console.log(e)
 	}
 }
 
@@ -45,7 +45,7 @@ async function secondConnection(serverId) {
 
 		return wsUrl;
 	} catch (e) {
-		// console.log(e)
+		console.log(e)
 	}
 }
 
@@ -78,7 +78,7 @@ async function getWsUrl(USER_ID, ROOM) {
 	} catch(e) {
 		//todo if 404 return room not found
 
-		// console.log(e)
+		console.log(e)
 		return {
 			success: false,
 			mode:'',

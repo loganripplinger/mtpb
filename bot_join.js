@@ -2,7 +2,7 @@ const WebSocket = require('ws');
 const jb = require("./jackbox_connection")
 const google = require('./googleparser')
 
-const ROOM = process.argv[2]
+const ROOM = process.argv[2].toUpperCase()
 
 const isNotValidRoom = ROOM.length !== 4 || !(/[a-zA-Z]{4}/.test(ROOM))
 if (isNotValidRoom) {
