@@ -20,6 +20,7 @@ const JOIN_TYPE = 'player'
 const RANDOM_ANSWER = false
 
 jb.getWsUrl(USER_ID, ROOM).then(res => {
+
 	// This makes a connection to the play room
 	// First make a websocket connection, and then parse that data
 
@@ -47,6 +48,7 @@ jb.getWsUrl(USER_ID, ROOM).then(res => {
 
 	ws.onopen = function (event) {
 	    console.log('Connection Open');
+	    console.log(joinRoomMessage)
 		ws.send(joinRoomMessage)
 	};
 
@@ -106,7 +108,6 @@ jb.getWsUrl(USER_ID, ROOM).then(res => {
 			    }
 			default:
 				console.log('\x1b[37m'+event.data+'\x1b[0m');
-			
 	    }
 	};
 
@@ -141,26 +142,35 @@ function handlePlayer(ws, data) {
 		
 		var chosen = json.chosen //should be null
 		var question = json.text
-		//todo if chosen then return
+
+		if (chosen) {
+			console.log(`Got the message verying we answered with choice ${chosen}`)
+			return
+		}
+
 	  	switch (mode) {
 	  		case 'MakeSingleChoice':
+	  			//when choices = [] then do nothing todo
+	  			console.log('we should be picking an answer...')
 	  			var answer = ''
 	  			// if (RANDOM_ANSWER) { 
-		  			answer = Math.floor(Math.random() * choices.length)
+		  		answer = Math.floor(Math.random() * choices.length)
 	  			// } else {
-	  			// 	var choicesArray = []
-	  			// 	for (var index; index < choices.length; i++) {
-	  			// 		choicesArray.push(choices[index].text)
-	  			// 	}
+  				var choicesArray = []
+  				for (var index; index < choices.length; i++) {
+  					choicesArray.push(choices[index].text)
+  				}
 	  			// 	// robotChoices = google.googleAnswer(question, choicesArray)
 	  			// 	// cool now we have an object that has {answer key: count, answer key: count}
 
 	  			// }
-		  		robotChoices = google.googleAnswer(question, choicesArray)
-		  		console.log(robotChoices)
-		  		const message = '5:::{"name":"msg","args":[{"roomId":"' + ROOM + '","userId":"' + USER_ID + '","message":{"choice":' + answer + '},"type":"Action","appId":"87fd7112-e835-4794-88bc-dc6e3630d640","action":"SendMessageToRoomOwner"}]}'
-		  		console.log('Sending: ' + message)
+		  		var message = '5:::{"name":"msg","args":[{"roomId":"' + ROOM + '","userId":"' + USER_ID + '","message":{"choice":' + answer + '},"type":"Action","appId":"87fd7112-e835-4794-88bc-dc6e3630d640","action":"SendMessageToRoomOwner"}]}'
 		  		ws.send(message)
+		  		console.log('Sending: ' + message)
+
+		  		console.log(choicesArray)
+		  		robotChoices = google.googleAnswer(question, choicesArray)
+		  		// console.log(robotChoices)
 		  		return 
 
 		  	case 'MakeManyChoices':
@@ -172,7 +182,7 @@ function handlePlayer(ws, data) {
 						multi_answer = multi_answer + ',' + true_or_false
 					}
 				}
-	  			const message = '5:::{"name":"msg","args":[{"roomId":"' + ROOM + '","userId":"' + USER_ID + '","message":{"choices":[' + multi_answer + ']},"type":"Action","appId":"87fd7112-e835-4794-88bc-dc6e3630d640","action":"SendMessageToRoomOwner"}]}'				
+	  			var message = '5:::{"name":"msg","args":[{"roomId":"' + ROOM + '","userId":"' + USER_ID + '","message":{"choices":[' + multi_answer + ']},"type":"Action","appId":"87fd7112-e835-4794-88bc-dc6e3630d640","action":"SendMessageToRoomOwner"}]}'				
 		  		ws.send(message)
 		  		return
 
@@ -195,7 +205,8 @@ function handlePlayer(ws, data) {
 
 
 function handleAudience(ws, json) {
-
+//use if
+//Cannot use 'in' operator to search for 'choices' in null.  {audience: null}
 	if (!('blob' in json) || !('audience' in json['blob']) || !('choices' in json['blob']['audience'])) {
 		console.log('Does not contain a question/answer for audience. Ignoring.')
 		return
@@ -234,7 +245,7 @@ function handleAudience(ws, json) {
 	if (question_type === 'single') {
     	// send a random answer
     	var chosen_answer = answer[Math.floor(Math.random() * answer.length)];
-		const answer_message = '5:::{"name":"msg","args":[{"userId":"' + USER_ID + '","roomId":"' + ROOM + '","module":"vote","name":"Trivia Death Vote","message":{"type":"vote","vote":"' + chosen_answer + '"},"type":"Action","appId":"87fd7112-e835-4794-88bc-dc6e3630d640","action":"SendSessionMessage"}]}'
+		var answer_message = '5:::{"name":"msg","args":[{"userId":"' + USER_ID + '","roomId":"' + ROOM + '","module":"vote","name":"Trivia Death Vote","message":{"type":"vote","vote":"' + chosen_answer + '"},"type":"Action","appId":"87fd7112-e835-4794-88bc-dc6e3630d640","action":"SendSessionMessage"}]}'
 		console.log('sending : ' + answer_message)
 		ws.send(answer_message)
 	} else if (question_type === 'multiple') {
@@ -253,7 +264,7 @@ function handleAudience(ws, json) {
 		console.log(multi_answer)
 
 		// send those answers
-		const answer_message = '5:::{"name":"msg","args":[{"userId":"' + USER_ID + '","roomId":"' + ROOM + '","module":"vote","name":"Trivia Death Vote","message":{"type":"vote","vote":"' + multi_answer + '"},"type":"Action","appId":"87fd7112-e835-4794-88bc-dc6e3630d640","action":"SendSessionMessage"}]}'
+		var answer_message = '5:::{"name":"msg","args":[{"userId":"' + USER_ID + '","roomId":"' + ROOM + '","module":"vote","name":"Trivia Death Vote","message":{"type":"vote","vote":"' + multi_answer + '"},"type":"Action","appId":"87fd7112-e835-4794-88bc-dc6e3630d640","action":"SendSessionMessage"}]}'
 		console.log('sending : ' + answer_message)
 		ws.send(answer_message)
 	}
@@ -261,6 +272,7 @@ function handleAudience(ws, json) {
 
 function randUserId() {
 	// produces: //656fb518-d0ae-494f-bfd6-4e9a8fbde2fa
+	// produces: //89378191-01a6-4024-a8b9-3d2990e3fea2
 	return Math.random().toString(16).substring(2, 10) + '-' + 
 		Math.random().toString(16).substring(2, 6) + '-' +
 		Math.random().toString(16).substring(2, 6) + '-' +
@@ -277,4 +289,9 @@ function logChatRoomData(event) {
 	    // done
 	  }
 	})
+}
+
+async function doAGoogle(question, choicesArray) {
+	var answer = await google.googleAnswer(question, choicesArray)
+	return answer
 }

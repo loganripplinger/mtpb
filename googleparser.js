@@ -31,7 +31,7 @@ async function googleAnswer(question, choices) {
 	  qs : {
 	    q : question
 	  },
-	  num : 3
+	  num : 1
 	};
 
 	answerCounter = {}
@@ -44,7 +44,7 @@ async function googleAnswer(question, choices) {
 	try {
 		var webSites = await serp.search(options)
 		// console.log(webSites.length)
-		for (i = 0; i <= webSites.length; i++) {
+		for (i = 0; i < webSites.length; i++) {
 			results.push(webSites[i].url)
 		}
 	} catch(e) {
@@ -55,13 +55,13 @@ async function googleAnswer(question, choices) {
 
 	for (var i = 0; i < results.length; i++) {
 		// console.log(webSites)
-		// console.log(`first for: ${i}`)
+		console.log(`first for: ${i}`)
 		try {
 			var res = await axios.get(results[i]);
 			var searchCorpus = res.data		
 
 			for (var j = 0; j < choices.length; j++) {
-				// console.log(`second for: ${j}, ${choices[j]}`)
+				console.log(`second for: ${j}, ${choices[j]}`)
 				var occurenceCount = countOccurences(searchCorpus, choices[j])
 				// We don't have to check if (choice in answerCounter)
 				// because we seeded it
@@ -84,8 +84,8 @@ function countOccurences(searchCorpus, text) {
 	return occurenceCount
 }
 
-// var question = 'Harvard Grads'
-// var choices = ['Stephen Colbert','Natalie Portman',"Conan O'Brien"]
+// var question = 'Which Girl Scout cookie is covered in chocolate?'
+// var choices = ["Tagalongs","Savannah Smiles","Do-si-dos","Trefoils"]
 // googleAnswer(question, choices)
 
 module.exports.googleAnswer = googleAnswer;
