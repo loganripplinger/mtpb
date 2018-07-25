@@ -2,7 +2,7 @@
 
 Runs a website that allows users to invite a bot to their Jackbox Murder Trivia Party game by sending a room code.
 
-The bot is primative and currently chooses random answers.
+**The bot is primative and currently chooses random answers.**
 
 This library is intended to either:
 1. Extended the base gameplay by providing a unique or novel experience
@@ -24,5 +24,6 @@ In your web browser, replace `4-digit-room code` with the room you want to join.
 ```
 localhost:3000/room/4-digit-room code
 ```
+This will spawn a bot that will attempt to join the room. You can spawn as many bots to join the room as you'd like by submitting the room code again.
 
-All data currently prints out to the console and will not be sent to the website.
+**All data currently prints out to the console and will not be sent to the website.**
