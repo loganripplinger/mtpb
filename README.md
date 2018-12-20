@@ -2,6 +2,7 @@
 
 Runs a website that allows users to invite a bot to their Jackbox Murder Trivia Party game by sending a room code.
 
+**This was not written with quality code. It created fast and dirty.**
 **The bot is primative and currently chooses random answers.**
 
 This library is intended to either:
