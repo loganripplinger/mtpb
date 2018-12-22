@@ -17,7 +17,7 @@ Use of this library may be against Jackbox's Terms of Service. If you intended t
 This can be easily extended to interact with any of the other jackbox games.
 
 ## To use
-Use `npm install` to install required things.
+Use `npm install` to install.
 
 Run the server with `node index.js`
 
@@ -28,3 +28,6 @@ localhost:3000/room/4-digit-room code
 This will spawn a bot that will attempt to join the room. You can spawn as many bots to join the room as you'd like by submitting the room code again.
 
 **All data currently prints out to the console and will not be sent to the website.**
+
+## Legal
+Free to use if you are not earning money while using. Contact for commercial / business / non-profit license.

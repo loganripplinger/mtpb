@@ -1,10 +1,13 @@
 var express = require('express');
 var app = express();
+var path = require('path');
 const { spawn } = require('child_process');
 
 app.get('/', function(req, res){
-	var welcomePage = "Hello! Go to 'url/room/4-digit-code' to make a bot join that room!";
-	res.send(welcomePage);
+	// var welcomePage = "Hello! Go to 'url/room/4-digit-code' to make a bot join that room!";
+	// res.send(welcomePage);
+	res.sendFile(path.join(__dirname + '/website/welcome.html'));
+
 });
 
 app.get('/room/:id([a-zA-Z]{4})', function(req, res){

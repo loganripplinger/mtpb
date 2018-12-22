@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang=en>
+<head>
+<meta charset=utf-8>
+<title>MTPB</title>
+<script type="text/javascript">
+	function openURL()
+	{
+	    var roomcode = document.getElementById('roomcode').value;
+	    var url = window.location.href + "room/" + encodeURIComponent(roomcode);
+	    window.open(url);
+	}
+</script>
+<style>
+	body {
+		margin-top: 5%;
+		margin-left: auto;
+		margin-right: auto;
+		
+		max-width: 500px;		
+	}
+	section {
+
+	}
+</style>
+</head>
+
+<body>
+<section id="welcome">
+	<h1>Hello!</h1>
+	<p>This is the landing page the Murder Trivia Party Bot.</p>
+</section>
+
+<section id="license">
+	<h2>Legal</h2>
+	<p>Not allowed to be used commercially unless you have paid for a license. Free to use if you are not earning money in the process.</p>	
+</section>
+
+<section id="usage">
+	<h2>Usage</h2>
+	<p>Enter your 4 digit roomcode here and click go to get the bot started.</p>
+	<p><em>Note: Currently the website does not provide any updates on the bots status.</em></p>
+	<p>
+		<label>4 Digit Room Code: 
+			<input type="text" name="roomcode" id="roomcode" value="AAAA"
+				 pattern="[A-Za-z]{4}" title="4 digit room code" required/>
+		</label>
+		<input type="button" onclick="openURL()" value="Go"/>
+	</p>
+</section>
+
+<section id="api">
+	<h2>API</h2>
+	<p>Go to '/room/ABCD' to make a bot join that room.</p>
+</section>
+</body>
+</html>
