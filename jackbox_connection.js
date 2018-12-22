@@ -41,38 +41,37 @@ async function secondConnection(serverId) {
 		const res = await axios.get(URL);
 		
 		var websocketId = res.data.split(':')[0];
-		var wsUrl = 'wss://' + serverId + PORT + '/socket.io/1/websocket/' + websocketId;
+		var webSocketURL = 'wss://' + serverId + PORT + '/socket.io/1/websocket/' + websocketId;
 
-		return wsUrl;
+		return webSocketURL;
 	} catch (e) {
 		// console.log(e)
 	}
 }
 
-
-async function getWsUrl(USER_ID, ROOM) {
+async function getWebSocketURL(USER_ID, ROOM) {
 	// Given a valid room id, this will give us the required url \
 	// that we need to connect on websocket to in order to play the 
 	// game.
 	try {
 		const data = await firstConnection(USER_ID, ROOM);
 
-		//fail if we are joining as a player or the audience is disabled
+		// fail if we are joining as a player or the audience is disabled
 		if (data['mode'] === "full") { 
 			return {
 				success: false,
 				mode: data['mode'], 
-				wsUrl: '',
+				webSocketURL: '',
 				serverId: ''}
 	  	};
 
 		// console.log('got first wait, serverId is :' + data['serverId']);
-		const wsUrl = await secondConnection(data['serverId']);
+		const webSocketURL = await secondConnection(data['serverId']);
 
 		return {
 			success: true,
 			mode: data['mode'],
-			wsUrl: wsUrl,
+			webSocketURL: webSocketURL,
 			serverId: data['serverId']
 		};
 	} catch(e) {
@@ -82,10 +81,10 @@ async function getWsUrl(USER_ID, ROOM) {
 		return {
 			success: false,
 			mode:'',
-			wsUrl: '',
+			webSocketURL: '',
 			serverId: ''
 		};
 	}
 }
 
-module.exports.getWsUrl = getWsUrl;
+module.exports.getWebSocketURL = getWebSocketURL;
