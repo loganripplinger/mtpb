@@ -27,6 +27,3 @@ localhost:3000/room/4-digit-room code
 This will spawn a bot that will attempt to join the room. You can spawn as many bots to join the room as you'd like by submitting the room code again.
 
 **All data currently prints out to the console and will not be sent to the website.**
-
-## Legal
-Free to use if you are not earning money while using. Contact for commercial / business / non-profit license.
